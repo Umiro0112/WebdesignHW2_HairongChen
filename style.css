@@ -26,25 +26,35 @@ body {
   text-align: center;
 }
 
+.objects {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
 h1 {
-  margin: 0 0 2rem;
+  margin: 0 0 2.6rem;
   font-size: clamp(1.4rem, 3vw, 2.5rem);
   font-weight: normal;
   color: #ffffff;
+  font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
 }
 
 .toothpaste-display {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: relative;
   width: min(80vw, 720px);
   margin: 0;
-  transform: translate(-50%, -52%);
+}
+
+.tissue-display {
+  width: min(68vw, 620px);
+  margin: 0;
 }
 
 .image-button {
   display: block;
-  width: 96%;
+  width: 90%;
   margin: 0 auto;
   padding: 0;
   border: 0;
@@ -68,6 +78,10 @@ h1 {
   width: 100%;
   height: auto;
   border-radius: 2px;
+}
+
+.tissue-button {
+  width: 85%;
 }
 
 @media (max-width: 600px) {

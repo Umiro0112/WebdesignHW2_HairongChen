@@ -10,22 +10,57 @@
   <main class="page">
     <h1>It always looks like there's more at the bottom.</h1>
 
-    <section class="toothpaste-display">
-      <button id="toothpaste-button" class="image-button" type="button" aria-label="Use toothpaste — 100% remaining">
-        <img id="toothpaste-image" src="assests/Images/paste1.png" alt="Toothpaste tube, 100% remaining">
-      </button>
-    </section>
+    <div class="objects">
+      <section class="toothpaste-display">
+        <button id="toothpaste-button" class="image-button" type="button" aria-label="Use toothpaste — 100% remaining">
+          <img id="toothpaste-image" src="assests/Images/paste1.png" alt="Toothpaste tube, 100% remaining">
+        </button>
+      </section>
+
+      <section class="tissue-display">
+        <button id="tissue-button" class="image-button tissue-button" type="button" aria-label="Use tissue — 100% remaining">
+          <img id="tissue-image" src="assests/Images/tissue/tissue1.png" alt="Tissue box, 100% remaining">
+        </button>
+      </section>
+    </div>
   </main>
 
   <script>
     const image = document.querySelector('#toothpaste-image');
     const button = document.querySelector('#toothpaste-button');
-    const totalStates = 10;
+    const tissueImage = document.querySelector('#tissue-image');
+    const tissueButton = document.querySelector('#tissue-button');
+    const imagePaths = [
+      'assests/Images/paste1.png',
+      'assests/Images/paste11.png',
+      'assests/Images/paste2.png',
+      'assests/Images/paste12.png',
+      'assests/Images/paste3.png',
+      'assests/Images/paste13.png',
+      'assests/Images/paste4.png',
+      'assests/Images/paste14.png',
+      'assests/Images/paste5.png',
+      'assests/Images/paste15.png',
+      'assests/Images/paste6.png',
+      'assests/Images/paste16.png',
+      'assests/Images/paste7.png',
+      'assests/Images/paste8.png',
+      'assests/Images/paste9.png',
+      'assests/Images/paste10.png'
+    ];
+    const totalStates = imagePaths.length;
+    const tissuePaths = Array.from({ length: 16 }, (_, index) => `assests/Images/tissue/tissue${index + 1}.png`);
+    const audioFiles = [
+      'assests/audio/squirt_1.mp3',
+      'assests/audio/squirt_2.mp3',
+      'assests/audio/squirt_3.mp3'
+    ];
     let state = 0;
+    let tissueState = 0;
     let backgroundBrightness = 100;
     let backgroundDirection = -1;
 
-    button.addEventListener('click', () => {
+    function changeBackgroundBrightness() {
       backgroundBrightness += backgroundDirection * 10;
 
       if (backgroundBrightness <= 0) {
@@ -37,23 +72,48 @@
       }
 
       document.body.style.backgroundColor = `rgb(${backgroundBrightness}%, ${backgroundBrightness}%, ${backgroundBrightness}%)`;
+    }
+
+    button.addEventListener('click', () => {
+      const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+      const sound = new Audio(randomAudio);
+      sound.play();
+
+      changeBackgroundBrightness();
 
       if (state >= totalStates - 1) {
         state = 0;
-        image.src = 'assests/Images/paste1.png';
+        image.src = imagePaths[0];
         image.alt = 'Toothpaste tube, 100% remaining';
         button.setAttribute('aria-label', 'Use toothpaste — 100% remaining');
         return;
       }
 
       state += 1;
-      const remaining = 100 - state * 10;
-      const assetNumber = state + 1;
+      const remaining = Math.round(100 - state * (100 / (totalStates - 1)));
       const remainingText = `${remaining}% remaining`;
 
-      image.src = `assests/Images/paste${assetNumber}.png`;
+      image.src = imagePaths[state];
       image.alt = `Toothpaste tube, ${remainingText}`;
       button.setAttribute('aria-label', state === totalStates - 1 ? 'Toothpaste is empty' : `Use toothpaste — ${remainingText}`);
+    });
+
+    tissueButton.addEventListener('click', () => {
+      changeBackgroundBrightness();
+
+      if (tissueState >= tissuePaths.length - 1) {
+        tissueState = 0;
+        tissueImage.src = tissuePaths[0];
+        tissueImage.alt = 'Tissue box, 100% remaining';
+        tissueButton.setAttribute('aria-label', 'Use tissue — 100% remaining');
+        return;
+      }
+
+      tissueState += 1;
+      const remaining = Math.round(100 - tissueState * (100 / (tissuePaths.length - 1)));
+      tissueImage.src = tissuePaths[tissueState];
+      tissueImage.alt = `Tissue box, ${remaining}% remaining`;
+      tissueButton.setAttribute('aria-label', tissueState === tissuePaths.length - 1 ? 'Tissue box is empty' : `Use tissue — ${remaining}% remaining`);
     });
   </script>
 </body>
