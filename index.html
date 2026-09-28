@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="page">
+  <main class="page scene">
     <h1>It always looks like there's more at the bottom.</h1>
 
     <div class="objects">
@@ -57,29 +57,12 @@
     ];
     let state = 0;
     let tissueState = 0;
-    let backgroundBrightness = 100;
-    let backgroundDirection = -1;
-
-    function changeBackgroundBrightness() {
-      backgroundBrightness += backgroundDirection * 10;
-
-      if (backgroundBrightness <= 0) {
-        backgroundBrightness = 0;
-        backgroundDirection = 1;
-      } else if (backgroundBrightness >= 100) {
-        backgroundBrightness = 100;
-        backgroundDirection = -1;
-      }
-
-      document.body.style.backgroundColor = `rgb(${backgroundBrightness}%, ${backgroundBrightness}%, ${backgroundBrightness}%)`;
-    }
+    let tissueClicks = 0;
 
     button.addEventListener('click', () => {
       const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
       const sound = new Audio(randomAudio);
       sound.play();
-
-      changeBackgroundBrightness();
 
       if (state >= totalStates - 1) {
         state = 0;
@@ -99,21 +82,32 @@
     });
 
     tissueButton.addEventListener('click', () => {
-      changeBackgroundBrightness();
+      if (tissueState === 0) {
+        tissueClicks += 1;
+        if (tissueClicks < 13) return;
+        tissueState = 1;
+        tissueImage.src = tissuePaths[tissueState];
+        tissueImage.alt = 'Tissue box, one tissue remaining';
+        tissueButton.setAttribute('aria-label', 'Use the last tissue');
+        return;
+      }
+
+      if (tissueState === 1) {
+        tissueState = 2;
+        tissueImage.src = tissuePaths[tissueState];
+        tissueImage.alt = 'Empty tissue box';
+        tissueButton.setAttribute('aria-label', 'Empty tissue box');
+        return;
+      }
 
       if (tissueState >= tissuePaths.length - 1) {
         tissueState = 0;
+        tissueClicks = 0;
         tissueImage.src = tissuePaths[0];
         tissueImage.alt = 'Tissue box, 100% remaining';
         tissueButton.setAttribute('aria-label', 'Use tissue — 100% remaining');
         return;
       }
-
-      tissueState += 1;
-      const remaining = Math.round(100 - tissueState * (100 / (tissuePaths.length - 1)));
-      tissueImage.src = tissuePaths[tissueState];
-      tissueImage.alt = `Tissue box, ${remaining}% remaining`;
-      tissueButton.setAttribute('aria-label', tissueState === tissuePaths.length - 1 ? 'Tissue box is empty' : `Use tissue — ${remaining}% remaining`);
     });
   </script>
 </body>
