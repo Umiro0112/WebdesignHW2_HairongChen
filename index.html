@@ -10,6 +10,8 @@
   <main class="page scene">
     <h1>It always looks like there's more at the bottom.</h1>
 
+    <div id="water-stains" class="water-stains" aria-hidden="true"></div>
+
     <div class="objects">
       <section class="toothpaste-display">
         <button id="toothpaste-button" class="image-button" type="button" aria-label="Use toothpaste — 100% remaining">
@@ -49,7 +51,7 @@
       'assests/Images/paste10.png'
     ];
     const totalStates = imagePaths.length;
-    const tissuePaths = Array.from({ length: 16 }, (_, index) => `assests/Images/tissue/tissue${index + 1}.png`);
+    const tissuePaths = Array.from({ length: 3 }, (_, index) => `assests/Images/tissue/tissue${index + 1}.png`);
     const audioFiles = [
       'assests/audio/squirt_1.mp3',
       'assests/audio/squirt_2.mp3',
@@ -58,11 +60,24 @@
     let state = 0;
     let tissueState = 0;
     let tissueClicks = 0;
+    let waterLevel = 0;
+    const waterStains = document.querySelector('#water-stains');
+
+    function addWater(amount) {
+      waterLevel = Math.min(1, waterLevel + amount);
+      waterStains.style.opacity = waterLevel;
+    }
+
+    setInterval(() => {
+      waterLevel = Math.max(0, waterLevel - 0.008);
+      waterStains.style.opacity = waterLevel;
+    }, 500);
 
     button.addEventListener('click', () => {
       const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
       const sound = new Audio(randomAudio);
       sound.play();
+      addWater(0.12);
 
       if (state >= totalStates - 1) {
         state = 0;
@@ -82,6 +97,8 @@
     });
 
     tissueButton.addEventListener('click', () => {
+      addWater(0.04);
+
       if (tissueState === 0) {
         tissueClicks += 1;
         if (tissueClicks < 13) return;
