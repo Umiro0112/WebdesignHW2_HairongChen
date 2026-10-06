@@ -20,28 +20,35 @@ body {
 
 .page {
   position: relative;
-  width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 320px;
+  container-type: size;
   overflow: hidden;
 }
 
 .scene {
   background-color: #ffffff;
   background-image: url('assests/bathroom-background.png');
-  background-position: center center;
-  background-size: cover;
+  /* Symmetric crop around the basin center (644): x: 56–1232,
+     y: 66–986. Exclude the remaining floor along the left edge. */
+  background-position: 19.5804% 42.3077%;
+  background-size: 124.3197% 116.9565%;
   background-repeat: no-repeat;
 }
 
 h1 {
   position: absolute;
   z-index: 3;
-  top: 54%;
+  top: 56%;
   left: 50%;
-  width: min(34vw, 500px);
+  width: 38%;
   margin: 0;
   transform: translateX(-50%);
-  font-size: clamp(1.4rem, 3vw, 2.5rem);
+  font-size: clamp(16px, min(3cqw, 4.1cqh), 42px);
+  line-height: 1.25;
+  pointer-events: none;
   font-weight: normal;
   color: #ffffff;
   font-family: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
@@ -59,19 +66,56 @@ h1 {
 .water-stains {
   position: absolute;
   z-index: 1;
-  top: 41%;
-  left: 17%;
-  width: 66%;
-  height: 36%;
+  /* Match the background crop so the water stays inside the basin. */
+  top: -7.1739%;
+  left: -4.7619%;
+  width: 124.3197%;
+  height: 116.9565%;
   opacity: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse at 24% 48%, rgba(123, 157, 178, 0.34) 0 12%, transparent 32%),
-    radial-gradient(ellipse at 69% 43%, rgba(110, 145, 170, 0.28) 0 15%, transparent 38%),
-    radial-gradient(ellipse at 48% 76%, rgba(137, 169, 184, 0.24) 0 14%, transparent 35%);
-  filter: blur(12px);
-  mix-blend-mode: multiply;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.25s linear;
+}
+
+.water-stains.is-cleared { transition: none; }
+
+/* Reuse the exact drain pixels from the background, aligned with its crop. */
+.drain-button {
+  position: absolute;
+  z-index: 2;
+  left: 45.7483%;
+  top: 40.3261%;
+  width: 8.3333%;
+  height: 10.2174%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.2s ease;
+}
+
+.drain-button svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.drain-button:focus-visible {
+  transform: scale(1.16);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .drain-button:hover { transform: scale(1.16); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-stains, .drain-button { transition: none; }
 }
 
 .toothpaste-display,
@@ -89,12 +133,17 @@ h1 {
   background: transparent;
   cursor: pointer;
   transition: transform 0.25s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.image-button:hover,
 .image-button:focus-visible {
-  transform: scale(1.015);
+  transform: scale(1.10);
   outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .image-button:hover { transform: scale(1.10); }
 }
 
 .image-button:focus-visible {
@@ -106,13 +155,24 @@ h1 {
   width: 100%;
   height: auto;
   border-radius: 2px;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .toothpaste-display {
   left: 50%;
-  bottom: 0.5%;
-  width: min(46vw, 700px);
-  transform: translateX(-50%);
+  top: 88.7%;
+  width: min(36cqw, 49cqh);
+  transform: translate(-50%, -50%);
+}
+
+.toothpaste-display .image-button {
+  width: 100%;
+}
+
+.toothpaste-display img {
+  /* Original PNGs include generous transparent margins above/below the tube. */
+  filter: drop-shadow(0 2px 1px rgba(50, 55, 60, 0.2));
 }
 
 .tissue-button {
@@ -120,26 +180,32 @@ h1 {
 }
 
 .tissue-display {
-  top: 5%;
-  right: 4%;
-  width: min(28vw, 400px);
+  top: 1%;
+  right: 1%;
+  width: min(36.59cqw, 49.66cqh);
 }
 
-@media (max-width: 600px) {
+/* Keep the same centered basin crop and object anchors on portrait screens. */
+@media (max-aspect-ratio: 3/4) {
   h1 {
-    top: 52%;
-    width: 55vw;
-    font-size: 1.25rem;
+    width: 48%;
+    font-size: clamp(16px, 4.3cqw, 28px);
   }
 
-  .toothpaste-display {
-    bottom: 2%;
-    width: 68vw;
-  }
+  .toothpaste-display { width: 58%; }
+  .tissue-display { width: 47.04%; }
+  .tissue-button { width: 100%; }
+}
 
-  .tissue-display {
-    top: 6%;
-    right: 2%;
-    width: 36vw;
+/* Keep the tap targets usable on phones, including landscape orientation. */
+@media (pointer: coarse) {
+  .image-button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-button { transition: none; }
 }

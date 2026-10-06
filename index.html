@@ -10,18 +10,27 @@
   <main class="page scene">
     <h1>It always looks like there's more at the bottom.</h1>
 
-    <div id="water-stains" class="water-stains" aria-hidden="true"></div>
+    <svg id="water-stains" class="water-stains" viewBox="0 0 1462 1076" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <!-- Follow the inner basin, leaving the ceramic counter dry. -->
+      <path d="M310 315 Q277 316 249 344 Q170 438 147 647 Q132 731 174 758 Q218 780 324 780 L970 777 Q1080 776 1118 741 Q1158 710 1142 635 Q1119 440 1048 340 Q1027 312 990 312 Z" fill="#379ed3"/>
+    </svg>
+
+    <button id="drain-button" class="drain-button" type="button" aria-label="Drain all water">
+      <svg viewBox="594 437 98 94" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <image href="assests/bathroom-background.png" width="1462" height="1076"/>
+      </svg>
+    </button>
 
     <div class="objects">
       <section class="toothpaste-display">
         <button id="toothpaste-button" class="image-button" type="button" aria-label="Use toothpaste — 100% remaining">
-          <img id="toothpaste-image" src="assests/Images/paste1.png" alt="Toothpaste tube, 100% remaining">
+        <img id="toothpaste-image" src="assests/Images/paste1.png" width="1672" height="941" draggable="false" alt="Toothpaste tube, 100% remaining">
         </button>
       </section>
 
       <section class="tissue-display">
         <button id="tissue-button" class="image-button tissue-button" type="button" aria-label="Use tissue — 100% remaining">
-          <img id="tissue-image" src="assests/Images/tissue/tissue1.png" alt="Tissue box, 100% remaining">
+          <img id="tissue-image" src="assests/Images/tissue/tissue1.png" width="1536" height="1024" draggable="false" alt="Tissue box, 100% remaining">
         </button>
       </section>
     </div>
@@ -61,22 +70,68 @@
     let tissueState = 0;
     let tissueClicks = 0;
     let waterLevel = 0;
+    let dryingBoost = 0;
+    const maxWaterOpacity = 0.34;
     const waterStains = document.querySelector('#water-stains');
+    function renderWater() {
+      waterStains.style.opacity = waterLevel * maxWaterOpacity;
+    }
+    const tissueSound = new Audio('assests/audio/tissue-pull.wav');
+    tissueSound.preload = 'auto';
+    tissueSound.volume = 0.8;
 
     function addWater(amount) {
+      waterStains.classList.remove('is-cleared');
       waterLevel = Math.min(1, waterLevel + amount);
-      waterStains.style.opacity = waterLevel;
+      renderWater();
     }
 
+    document.querySelector('#drain-button').addEventListener('click', () => {
+      waterLevel = 0;
+      dryingBoost = 0;
+      waterStains.classList.add('is-cleared');
+      renderWater();
+    });
+
+    function wipeWater() {
+      waterLevel = Math.max(0, waterLevel - 0.1);
+      dryingBoost = waterLevel > 0 ? Math.min(0.16, dryingBoost + 0.04) : 0;
+      renderWater();
+    }
+
+    let tissueFeedback;
+    function showTissueFeedback() {
+      if (tissueFeedback) tissueFeedback.cancel();
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      tissueFeedback = tissueImage.animate(
+        reducedMotion
+          ? [{ opacity: 1 }, { opacity: 0.65 }, { opacity: 1 }]
+          : [
+              { transform: 'translateX(0) rotate(0deg)' },
+              { transform: 'translateX(-3px) rotate(-2deg)' },
+              { transform: 'translateX(3px) rotate(2deg)' },
+              { transform: 'translateX(-2px) rotate(-1deg)' },
+              { transform: 'translateX(0) rotate(0deg)' }
+            ],
+        { duration: 280, easing: 'ease-out' }
+      );
+    }
+
+    let lastDryTime = performance.now();
     setInterval(() => {
-      waterLevel = Math.max(0, waterLevel - 0.008);
-      waterStains.style.opacity = waterLevel;
-    }, 500);
+      const now = performance.now();
+      const seconds = (now - lastDryTime) / 1000;
+      lastDryTime = now;
+      // Water always drains naturally, including after reaching the cap.
+      waterLevel = Math.max(0, waterLevel - (0.025 + dryingBoost) * seconds);
+      dryingBoost = waterLevel > 0 ? Math.max(0, dryingBoost - 0.012 * seconds) : 0;
+      renderWater();
+    }, 100);
 
     button.addEventListener('click', () => {
       const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
       const sound = new Audio(randomAudio);
-      sound.play();
+      sound.play().catch(() => {});
       addWater(0.12);
 
       if (state >= totalStates - 1) {
@@ -97,7 +152,10 @@
     });
 
     tissueButton.addEventListener('click', () => {
-      addWater(0.04);
+      tissueSound.currentTime = 0;
+      tissueSound.play().catch(() => {});
+      wipeWater();
+      showTissueFeedback();
 
       if (tissueState === 0) {
         tissueClicks += 1;
